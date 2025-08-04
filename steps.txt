@@ -1,0 +1,7 @@
+eksctl create iamserviceaccount \
+  --name ecr-reader \
+  --namespace default \
+  --cluster ecom-cluster \
+  --attach-policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
+  --approve \
+  --override-existing-serviceaccounts

@@ -1,0 +1,53 @@
+input:
+  redpanda_migrator:
+    seed_brokers: ["pkc-921jm.us-east-2.aws.confluent.cloud:9092"]
+    # seed_brokers: ["broker:29092"] 
+    topics: ["test_topic"]
+    regexp_topics: true
+    consumer_group: "redpanda_migrator_group"
+    start_from_oldest: true
+    tls:
+      enabled: true
+      root_cas_file: "/etc/ssl/certs/ca-certificates.crt"
+    sasl:
+      - mechanism: "PLAIN"
+        username: "OJK5IVIBKAYA7FIP"
+        password: "Qtm4EKcJyco5bbevDWN6xxcpkZ+WKYFcDK1+GHQNcX7yDQmv25pbk0/e0HCKwsmO"
+
+pipeline:
+  processors:
+    # Try Avro decoding first (if Schema Registry is available)
+    - try:
+        - schema_registry_decode:
+            avro:
+              raw_unions: false
+              preserve_logical_types: false
+            url: "https://psrc-4yovk.us-east-2.aws.confluent.cloud"
+            basic_auth:
+              enabled: true
+              username: "CN2UUBSKHDOJGKDD"
+              password: "tTigvPeThZeB2jjygO5qN/7udIUp9bm4KwzG7ulANt+kSbhXUymUxqQ00AzfiQhG"
+
+        # Fall back to raw JSON if Avro decoding fails
+        - catch:
+            - log:
+                level: WARN
+                message: "Failed to decode as Avro, falling back to raw JSON"
+            - bloblang: |
+                root = this
+                # Optional: Add custom JSON parsing if needed
+                # root = this.parse_json()
+output:
+  redpanda_migrator:
+    seed_brokers: ["d0qfh2fl3k9bn433gbj0.any.us-east-1.mpx.prd.cloud.redpanda.com:9092"]  # Changed from 'addresses' to 'brokers'; use container name
+    topic: ${! meta("kafka_topic") } 
+    key: ${! meta("kafka_key") } 
+    sasl:
+      - mechanism: "SCRAM-SHA-512"  # Replace with SCRAM-SHA-256 or SCRAM-SHA-512 from Redpanda Cloud UI
+        username: "vijaygaur"  # Replace with your Redpanda Cloud username
+        password: "redpanda" 
+    tls:
+      enabled: true # Replace with your Redpanda Cloud password
+    # Mirrors the input topic name
+    # No schema_registry_url needed for Redpanda unless you’re encoding with a schema
+

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redpanda-migrator
+  namespace: redpanda-migrator
+  labels:
+    app: redpanda-migrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redpanda-migrator
+  template:
+    metadata:
+      labels:
+        app: redpanda-migrator
+    spec:
+      serviceAccountName: s3-access-sa  # IRSA role must allow s3:GetObject
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+      initContainers:
+        - name: init-s3-downloader
+          image: amazon/aws-cli:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "Downloading config from S3..." && \
+              aws s3 cp s3://redpanda-config/config.yaml /shared/config.yaml && \
+              chmod 0664 /shared/config.yaml && \
+              ls -l /shared
+          env:
+            - name: AWS_REGION
+              value: us-east-1
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+      containers:
+        - name: redpanda-migrator-server
+          image: docker.redpanda.com/redpandadata/connect:latest
+          command: ["/redpanda-connect", "-c", "/config.yaml"]
+          ports:
+            - containerPort: 4195
+          volumeMounts:
+            - name: shared-data
+              mountPath: /config.yaml
+              subPath: config.yaml
