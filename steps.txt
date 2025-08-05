@@ -1,7 +1,4 @@
-eksctl create iamserviceaccount \
-  --name ecr-reader \
-  --namespace default \
-  --cluster ecom-cluster \
-  --attach-policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
-  --approve \
-  --override-existing-serviceaccounts
+aws eks update-cluster-config \
+  --name demo-cluster \
+  --region us-east-1 \
+  --resources-vpc-config endpointPublicAccess=true
