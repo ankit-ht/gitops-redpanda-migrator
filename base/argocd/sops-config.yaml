@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sops-config
+  namespace: argocd
+data:
+  .sops.yaml: |
+    creation_rules:
+      - kms: arn:aws:kms:us-east-1:016311861830:key/319cd819-54a3-4238-ae16-4265ce0148c8
+        encrypted_regex: '^(data|stringData)$'

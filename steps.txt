@@ -2,3 +2,17 @@ aws eks update-cluster-config \
   --name demo-cluster \
   --region us-east-1 \
   --resources-vpc-config endpointPublicAccess=true
+
+kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-user}" | base64 -d && echo
+kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d && echo
+
+kafka-lag dashboard id: 7589
+
+prometheus: http://prometheus.monitoring.svc.cluster.local:9090
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm upgrade --install kafka-exporter prometheus-community/prometheus-kafka-exporter \
+  -n monitoring \
+  -f values_kafka_exporter.yaml

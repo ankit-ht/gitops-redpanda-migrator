@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-exporter
+  namespace: monitoring
+  labels:
+    app: kafka-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-exporter
+  template:
+    metadata:
+      labels:
+        app: kafka-exporter
+    spec:
+      containers:
+        - name: kafka-exporter
+          image: danielqsj/kafka-exporter:latest
+          args:
+            - "--kafka.server=$(BOOTSTRAP_SERVERS)"
+            - "--sasl.enabled"
+            - "--sasl.username=$(BASIC_AUTH_USERNAME)"
+            - "--sasl.password=$(BASIC_AUTH_PASSWORD)"
+            - "--sasl.mechanism=PLAIN"
+            - "--tls.enabled"
+            - "--web.listen-address=:8000"
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: pkc-921jm.us-east-2.aws.confluent.cloud:9092
+            - name: BASIC_AUTH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: confluent-api-secret
+                  key: BASIC_AUTH_USERNAME
+            - name: BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: confluent-api-secret
+                  key: BASIC_AUTH_PASSWORD
+          ports:
+            - containerPort: 8000

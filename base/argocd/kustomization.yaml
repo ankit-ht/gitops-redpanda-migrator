@@ -1,5 +1,11 @@
 resources:
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  - sops-config.yaml
   - ingress.yaml
   
+
+patchesStrategicMerge:
+  - argocd-cm.yaml
+  - argocd-repo-server.yaml
+
 namespace: argocd

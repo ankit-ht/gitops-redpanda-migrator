@@ -1,0 +1,44 @@
+replicaCount: 1
+
+image:
+  repository: danielqsj/kafka-exporter
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+  labels:
+    app: kafka-exporter
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+extraArgs:
+  kafka.server: "pkc-921jm.us-east-2.aws.confluent.cloud:9092"
+  tls.enabled: true
+  sasl.enabled: true
+  sasl.username: "${BASIC_AUTH_USERNAME}"
+  sasl.password: "${BASIC_AUTH_PASSWORD}"
+  sasl.mechanism: "PLAIN"
+
+env:
+  - name: BASIC_AUTH_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: confluent-api-secret
+        key: BASIC_AUTH_USERNAME
+  - name: BASIC_AUTH_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: confluent-api-secret
+        key: BASIC_AUTH_PASSWORD

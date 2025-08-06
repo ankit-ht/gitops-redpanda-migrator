@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-lag-exporter-config
+  namespace: monitoring
+data:
+  application.conf: |
+    kafka-lag-exporter {
+      clusters = [
+        {
+          name = "confluent-cloud"
+          bootstrap-brokers = "pkc-921jm.us-east-2.aws.confluent.cloud:9092"
+          properties = {
+            security.protocol = "SASL_SSL"
+            sasl.mechanism = "PLAIN"
+            sasl.jaas.config = """org.apache.kafka.common.security.plain.PlainLoginModule required username="${?BASIC_AUTH_USERNAME}" password="${?BASIC_AUTH_PASSWORD}";"""
+          }
+        }
+      ]
+
+      reporters {
+        prometheus {
+          port = ${?PROMETHEUS_PORT}  # Optional env override
+          port = 8000                 # Hardcoded fallback, ensures number type
+        }
+      }
+    }
