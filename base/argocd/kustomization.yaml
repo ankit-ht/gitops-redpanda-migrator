@@ -1,6 +1,7 @@
 resources:
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
   - sops-config.yaml
+  - service-account.yaml
   - ingress.yaml
   
 
