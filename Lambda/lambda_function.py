@@ -1,6 +1,7 @@
 import os
 import subprocess
 import tempfile
+import uuid
 
 GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 REPO = os.environ["REPO"]
@@ -21,8 +22,10 @@ def handler(event, context):
             subprocess.run(["git", "config", "user.email", GIT_USER_EMAIL], check=True)
             subprocess.run(["git", "config", "user.name", GIT_USER_NAME], check=True)
 
+            random_message = f"Trigger commit {uuid.uuid4()}"
+
             # Dummy commit
-            subprocess.run(["git", "commit", "--allow-empty", "-m", "Trigger push event"], check=True)
+            subprocess.run(["git", "commit", "--allow-empty", "-m", random_message], check=True)
             subprocess.run(["git", "push", "origin", BRANCH], check=True)
 
         return {"status": "success"}

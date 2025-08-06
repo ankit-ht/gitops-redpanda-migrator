@@ -1,0 +1,6 @@
+resources:
+  - prometheus-config.yaml
+  - prometheus-deployment.yaml
+  - prometheus-service.yaml
+
+namespace: monitoring1

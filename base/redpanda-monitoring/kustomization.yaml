@@ -1,0 +1,5 @@
+resources:
+  - redpanda-exporter-deployment.yaml
+  - redpanda-cm.yaml
+  - redpanda-service.yaml
+  - secrets.yaml

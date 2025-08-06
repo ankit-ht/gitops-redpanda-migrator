@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redpanda-exporter
+  namespace: monitoring
+  labels:
+    app: redpanda-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redpanda-exporter
+  template:
+    metadata:
+      labels:
+        app: redpanda-exporter
+    spec:
+      containers:
+        - name: redpanda-exporter
+          image: danielqsj/kafka-exporter:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--kafka.server=$(BOOTSTRAP_SERVERS)"
+            - "--sasl.enabled"
+            - "--sasl.username=$(BASIC_AUTH_USERNAME)"
+            - "--sasl.password=$(BASIC_AUTH_PASSWORD)"
+            - "--sasl.mechanism=scram-sha512"
+            - "--tls.enabled"
+            - "--web.listen-address=:8000"
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: d0qfh2fl3k9bn433gbj0.any.us-east-1.mpx.prd.cloud.redpanda.com:9092
+            - name: BASIC_AUTH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: redpanda-api-secret
+                  key: BASIC_AUTH_USERNAME
+            - name: BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redpanda-api-secret
+                  key: BASIC_AUTH_PASSWORD
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 30
