@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     app: redpanda-migrator
-  type: ClusterIP
+  type: NodePort
   ports:
   - port: 4195
     targetPort: 4195
