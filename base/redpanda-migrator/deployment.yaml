@@ -27,7 +27,7 @@ spec:
         - -c
         - 'echo "Downloading config from S3..." && \
 
-          aws s3 cp s3://redpanda-config/config2.yaml /shared/config.yaml && \
+          aws s3 cp s3://redpanda-config/config.yaml /shared/config.yaml && \
 
           chmod 0664 /shared/config.yaml && \
 
