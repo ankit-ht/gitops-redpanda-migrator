@@ -55,7 +55,7 @@ spec:
           subPath: config.yaml
         livenessProbe:
           httpGet:
-            path: /live
+            path: /health
             port: 4195
           initialDelaySeconds: 5
           periodSeconds: 10
@@ -63,7 +63,7 @@ spec:
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /ready
+            path: /health
             port: 4195
           initialDelaySeconds: 5
           periodSeconds: 10
