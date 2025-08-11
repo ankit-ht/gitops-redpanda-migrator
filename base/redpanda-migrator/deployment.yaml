@@ -54,19 +54,18 @@ spec:
           mountPath: /config.yaml
           subPath: config.yaml
         livenessProbe:
-            httpGet:
-              path: /live
-              port: 4195
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 3
+          httpGet:
+            path: /live
+            port: 4195
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
         readinessProbe:
-            httpGet:
-              path: /ready
-              port: 4195
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 3
-# False update at 2025-08-11T11:30:55.527927Z
+          httpGet:
+            path: /ready
+            port: 4195
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
