@@ -53,14 +53,6 @@ spec:
         - name: shared-data
           mountPath: /config.yaml
           subPath: config.yaml
-        livenessProbe:
-          httpGet:
-            path: /live
-            port: 4195
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          timeoutSeconds: 2
-          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /ready
