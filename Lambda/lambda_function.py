@@ -1,43 +1,62 @@
 import os
-import subprocess
 import tempfile
+import subprocess
+import yaml
 import uuid
+from datetime import datetime
 
-GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
-REPO = os.environ["REPO"]
-BRANCH = os.environ["BRANCH"]
-GIT_USER_NAME = os.environ.get("GIT_USER_NAME", "Lambda Bot")
-GIT_USER_EMAIL = os.environ.get("GIT_USER_EMAIL", "lambda@example.com")
+# ENV variables
+GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
+REPO = os.environ["REPO"]  # e.g. "ankit-ht/gitops-redpanda-migrator"
+BRANCH = os.environ.get("BRANCH", "main")
+NEW_CONFIG = os.environ.get("NEW_CONFIG", "config-new.yaml")
+OLD_CONFIG = os.environ.get("OLD_CONFIG", "config-new.yaml")
 
 def handler(event, context):
-    try:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            repo_url = REPO.replace("https://", f"https://{GITHUB_TOKEN}@")
+    repo_url = f"https://{GITHUB_TOKEN}@github.com/{REPO}.git"
+    random_commit_id = uuid.uuid4().hex[:8]
 
-            subprocess.run(["git", "clone", "-b", BRANCH, repo_url, tmpdir], check=True)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # 1️⃣ Clone repo
+        subprocess.check_call(["git", "clone", "-b", BRANCH, repo_url, tmpdir])
+        file_path = os.path.join(tmpdir, "base", "redpanda-migrator", "deployment.yaml")
 
-            os.chdir(tmpdir)
+        # 2️⃣ Load YAML
+        with open(file_path, "r") as f:
+            deployment = yaml.safe_load(f)
 
-            # Set identity
-            subprocess.run(["git", "config", "user.email", GIT_USER_EMAIL], check=True)
-            subprocess.run(["git", "config", "user.name", GIT_USER_NAME], check=True)
+        # 3️⃣ Change replicas
+        deployment["spec"]["replicas"] = 1
 
-            random_message = f"Trigger commit {uuid.uuid4()}"
+        # 4️⃣ Replace config file name in initContainer command
+        init_cmd = deployment["spec"]["template"]["spec"]["initContainers"][0]["command"][-1]
+        updated_cmd = init_cmd.replace(OLD_CONFIG, NEW_CONFIG)
+        deployment["spec"]["template"]["spec"]["initContainers"][0]["command"][-1] = updated_cmd
 
-            # Dummy commit
-            subprocess.run(["git", "commit", "--allow-empty", "-m", random_message], check=True)
-            subprocess.run(["git", "push", "origin", BRANCH], check=True)
+        # 5️⃣ Save YAML
+        with open(file_path, "w") as f:
+            yaml.dump(deployment, f, sort_keys=False)
 
-        return {"status": "success"}
+        # 6️⃣ Git config
+        subprocess.check_call(["git", "-C", tmpdir, "config", "user.name", "Lambda Bot"])
+        subprocess.check_call(["git", "-C", tmpdir, "config", "user.email", "lambda@example.com"])
+        subprocess.check_call(["git", "-C", tmpdir, "add", file_path])
 
-    except subprocess.CalledProcessError as e:
-        return {
-            "status": "fail",
-            "error": str(e),
-            "step": e.cmd
-        }
-    except Exception as ex:
-        return {
-            "status": "fail",
-            "error": str(ex)
-        }
+        # 7️⃣ Check if there’s anything to commit
+        status = subprocess.check_output(["git", "-C", tmpdir, "status", "--porcelain"]).decode().strip()
+        if not status:
+            # No changes → make a false update
+            with open(file_path, "a") as f:
+                f.write(f"# False update at {datetime.utcnow().isoformat()}Z\n")
+            subprocess.check_call(["git", "-C", tmpdir, "add", file_path])
+
+        # 8️⃣ Commit & push
+        commit_message = f"Update replicas and config file [{random_commit_id}]"
+        subprocess.check_call(["git", "-C", tmpdir, "commit", "-m", commit_message])
+        subprocess.check_call(["git", "-C", tmpdir, "push", "origin", BRANCH])
+
+    return {
+        "status": "success",
+        "commit_id": random_commit_id,
+        "message": f"Deployment.yaml updated and pushed with commit ID {random_commit_id}"
+    }

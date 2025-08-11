@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-consumer
+  template:
+    metadata:
+      labels:
+        app: kafka-consumer
+    spec:
+      containers:
+      - name: consumer
+        image: your-docker-image:latest
+        env:
+        - name: BOOTSTRAP_SERVERS
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-secrets
+              key: BOOTSTRAP_SERVERS
+        - name: TOPIC
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-secrets
+              key: TOPIC
+        - name: GROUP_ID
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-secrets
+              key: GROUP_ID
+        - name: SECURITY_PROTOCOL
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-secrets
+              key: SECURITY_PROTOCOL
+        - name: SASL_MECHANISM
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-secrets
+              key: SASL_MECHANISM
+        - name: KAFKA_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-secrets
+              key: KAFKA_USERNAME
+        - name: KAFKA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-consumer-secrets
+              key: KAFKA_PASSWORD
+        ports:
+        - containerPort: 8080

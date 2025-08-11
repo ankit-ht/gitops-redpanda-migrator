@@ -3,3 +3,4 @@
 secrets.yaml
 config.py
 kafka-secret.yaml
+config_redpanda.py

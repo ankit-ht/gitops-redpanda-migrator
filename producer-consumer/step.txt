@@ -1,0 +1,9 @@
+docker run --rm \
+  --env-file .env.confluent \
+  confluent-kafka-app
+
+
+docker run --rm \
+  --env-file .env.redpanda \
+  confluent-kafka-app
+

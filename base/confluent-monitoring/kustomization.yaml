@@ -1,7 +1,6 @@
 namespace: monitoring
 resources:
   - kafka-secret.yaml
-  - kafka-lag-configmap.yaml
   - kafka-lag-service.yaml
   - kafka-lag-exporter-deployment.yaml
   - prometheus-config.yaml
