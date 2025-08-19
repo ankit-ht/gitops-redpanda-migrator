@@ -25,15 +25,10 @@ spec:
         command:
         - sh
         - -c
-        - 'echo "Downloading config from S3..." && \
-
-          aws s3 cp s3://redpanda-config/config.yaml /shared/config.yaml && \
-
-          chmod 0664 /shared/config.yaml && \
-
-          ls -l /shared
-
-          '
+        - "\n            echo \"Downloading config from S3...\" &&             aws\
+          \ s3 cp s3://redpanda-config1/testconfig.yaml /shared/config.yaml &&   \
+          \          chmod 0664 /shared/config.yaml &&             ls -l /shared\n\
+          \            "
         env:
         - name: AWS_REGION
           value: us-east-1
@@ -61,4 +56,3 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 2
           failureThreshold: 3
-# False update at 2025-08-18T09:25:20.251631Z
